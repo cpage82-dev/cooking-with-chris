@@ -131,7 +131,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'recipe_name',
-            'recipe_image_url',
+            'recipe_image',
             'thumbnail_url',
             'course_type',
             'recipe_type',
@@ -158,7 +158,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
         Uses Cloudinary transformation to create 80x80px thumbnail.
         If no image, returns default image URL.
         """
-        if obj.recipe_image_url:
+        if obj.recipe_image:
             # Insert Cloudinary transformation for 80x80 thumbnail
             # Example: https://res.cloudinary.com/.../w_80,h_80,c_fill,q_auto,f_auto/recipe.jpg
             url = obj.recipe_image_url
@@ -190,7 +190,7 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
             'id',
             'recipe_name',
             'recipe_description',
-            'recipe_image_url',
+            'recipe_image',
             'course_type',
             'recipe_type',
             'primary_protein',
@@ -239,7 +239,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             'id',
             'recipe_name',
             'recipe_description',
-            'recipe_image_url',
+            'recipe_image',
             'course_type',
             'recipe_type',
             'primary_protein',
