@@ -178,6 +178,13 @@ CORS_ALLOWED_ORIGINS = config(
 )
 CORS_ALLOW_CREDENTIALS = True
 
+# CSRF Configuration (required for Django 6.0+)
+CSRF_TRUSTED_ORIGINS = config(
+    'CORS_ALLOWED_ORIGINS',  # Reuse same origins as CORS
+    default='http://localhost:5173,http://127.0.0.1:5173',
+    cast=Csv()
+)
+
 # Email Configuration (SendGrid)
 EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
 SENDGRID_API_KEY = config('SENDGRID_API_KEY', default='')
