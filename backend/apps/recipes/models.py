@@ -106,11 +106,11 @@ class Recipe(models.Model):
         help_text="Description of the recipe (max 1000 characters)"
     )
     
-    recipe_image = models.ImageField(
-        upload_to='recipes/',
+    recipe_image_url = models.URLField(
+        max_length=500,
         null=True,
         blank=True,
-        help_text="Recipe image (uploaded to Cloudinary)"
+        help_text="Cloudinary URL for recipe image"
     )
     
     # Classification fields
