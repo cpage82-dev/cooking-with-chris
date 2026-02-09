@@ -13,6 +13,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models.functions import Lower
 from apps.users.models import User
+from cloudinary.models import CloudinaryField
 
 
 # Picklist value choices
@@ -106,8 +107,9 @@ class Recipe(models.Model):
         help_text="Description of the recipe (max 1000 characters)"
     )
     
-    recipe_image = models.ImageField(
-        upload_to='recipes/',
+    recipe_image = CloudinaryField(
+        'image',
+        folder='recipes',
         null=True,
         blank=True,
         help_text="Recipe image (uploaded to Cloudinary)"
