@@ -70,7 +70,7 @@ class Recipe(models.Model):
         user: Foreign key to User who created the recipe
         recipe_name: Name of the recipe (unique, max 150 chars)
         recipe_description: Description of the recipe (max 1000 chars)
-        recipe_image_url: Cloudinary URL for recipe image
+        recipe_image: Cloudinary URL for recipe image
         course_type: Type of course (Breakfast, Dinner, etc.)
         recipe_type: Type of recipe (Entrée, Soup, etc.)
         primary_protein: Main protein (Beef, Chicken, etc.)

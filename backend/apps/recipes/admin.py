@@ -66,7 +66,7 @@ class RecipeAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('recipe_name', 'recipe_description', 'recipe_image_url', 'user')
+            'fields': ('recipe_name', 'recipe_description', 'recipe_image', 'user')
         }),
         ('Classification', {
             'fields': ('course_type', 'recipe_type', 'primary_protein', 'ethnic_style')
