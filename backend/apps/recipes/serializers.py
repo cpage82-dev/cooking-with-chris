@@ -154,20 +154,23 @@ class RecipeListSerializer(serializers.ModelSerializer):
     def get_thumbnail_url(self, obj):
         """
         Return optimized thumbnail URL for table display.
-        
+    
         Uses Cloudinary transformation to create 80x80px thumbnail.
         If no image, returns default image URL.
         """
         if obj.recipe_image:
-            # Insert Cloudinary transformation for 80x80 thumbnail
-            # Example: https://res.cloudinary.com/.../w_80,h_80,c_fill,q_auto,f_auto/recipe.jpg
-            url = obj.recipe_image_url
-            if 'cloudinary.com' in url and '/upload/' in url:
-                parts = url.split('/upload/')
-                return f"{parts[0]}/upload/w_80,h_80,c_fill,q_auto,f_auto/{parts[1]}"
-            return url
-        
-        # Default image
+            # CloudinaryField has a .url property
+            try:
+                url = obj.recipe_image.url
+                if 'cloudinary.com' in url and '/upload/' in url:
+                    parts = url.split('/upload/')
+                    return f"{parts[0]}/upload/w_80,h_80,c_fill,q_auto,f_auto/{parts[1]}"
+                return url
+            except (AttributeError, ValueError):
+                # If Cloudinary URL generation fails, return None
+                pass
+    
+    # Default image
         return "https://as1.ftcdn.net/v2/jpg/00/81/88/98/1000_F_81889870_D1KroNymRQ1EfNZu8GDR0ZOxQSgocxUf.jpg"
 
 
