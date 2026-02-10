@@ -382,7 +382,7 @@ const CreateRecipePage = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
               <p className="text-sm text-gray-500 mt-1">
-                Image upload to Cloudinary will be implemented
+                Please upload an image of your dish.
               </p>
             </div>
 
@@ -541,7 +541,7 @@ const CreateRecipePage = () => {
               onClick={addIngredientSection}
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
             >
-              + Add Section
+              + Add Ingredients Section
             </button>
           </div>
 
@@ -584,7 +584,7 @@ const CreateRecipePage = () => {
                     onChange={(e) =>
                       updateIngredient(sectionIndex, ingredientIndex, 'ingredient_uom', e.target.value)
                     }
-                    placeholder="Unit"
+                    placeholder="UoM"
                     className="w-24 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                   <input
@@ -629,7 +629,7 @@ const CreateRecipePage = () => {
               onClick={addInstructionSection}
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
             >
-              + Add Section
+              + Add Instruction Section
             </button>
           </div>
 

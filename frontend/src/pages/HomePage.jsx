@@ -15,11 +15,11 @@ const HomePage = () => {
       
       {isAuthenticated ? (
         <p className="text-xl text-gray-600 mb-8">
-          Hello, {user?.first_name}! Ready to cook something delicious?
+          Hi, {user?.first_name}! Ready to Cook Something Delicious?
         </p>
       ) : (
         <p className="text-xl text-gray-600 mb-8">
-          Discover and share amazing recipes
+          Discover and Share Amazing Recipes with your Friends!
         </p>
       )}
 
@@ -36,7 +36,7 @@ const HomePage = () => {
             to="/recipes/new"
             className="bg-green-600 text-white px-8 py-3 rounded-lg text-lg hover:bg-green-700 transition"
           >
-            Create Recipe
+            Create a Recipe
           </Link>
         )}
         
@@ -55,21 +55,21 @@ const HomePage = () => {
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-2xl font-bold mb-2">Browse Recipes</h3>
           <p className="text-gray-600">
-            Explore thousands of delicious recipes from around the world
+            Explore delicious recipes uploaded by Chris and other users.
           </p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-2xl font-bold mb-2">Share Your Recipes</h3>
           <p className="text-gray-600">
-            Upload your own recipes and share them with the community
+            Upload your own recipes and share them with the community.
           </p>
         </div>
         
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-2xl font-bold mb-2">Save Favorites</h3>
           <p className="text-gray-600">
-            Bookmark your favorite recipes for easy access later
+            Bookmark your favorite recipes for easy access anytime you want to cook.
           </p>
         </div>
       </div>

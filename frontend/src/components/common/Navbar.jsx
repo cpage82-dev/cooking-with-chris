@@ -28,7 +28,7 @@ const Navbar = () => {
               to="/recipes"
               className="text-gray-700 hover:text-blue-600 transition"
             >
-              Recipes
+              View All Recipes
             </Link>
 
             {isAuthenticated ? (
@@ -41,7 +41,7 @@ const Navbar = () => {
                 </Link>
                 <div className="flex items-center space-x-4">
                   <span className="text-gray-600">
-                    {user?.first_name} {user?.last_name}
+                    <p>Welcome, {user?.first_name} {user?.last_name}!</p>
                   </span>
                   <button
                     onClick={handleLogout}

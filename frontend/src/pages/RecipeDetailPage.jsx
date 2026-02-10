@@ -91,7 +91,7 @@ const RecipeDetailPage = () => {
             <h1 className="text-4xl font-bold text-gray-800 mb-2">
               {recipe.recipe_name}
             </h1>
-            <p className="text-gray-600">By {recipe.creator_name}</p>
+            <p className="text-gray-600">By {recipe.creator_name} | Created {recipe.created_at}</p>
           </div>
 
           {canEdit && (
@@ -172,7 +172,7 @@ const RecipeDetailPage = () => {
 
       {/* Time and Servings */}
       <div className="bg-blue-50 p-6 rounded-lg mb-6">
-        <div className="grid grid-cols-3 gap-4 text-center">
+        <div className="grid grid-cols-4 gap-4 text-center">
           <div>
             <p className="text-blue-800 font-semibold text-sm">Prep Time</p>
             <p className="text-2xl font-bold text-blue-900">{recipe.prep_time} min</p>
@@ -180,6 +180,10 @@ const RecipeDetailPage = () => {
           <div>
             <p className="text-blue-800 font-semibold text-sm">Cook Time</p>
             <p className="text-2xl font-bold text-blue-900">{recipe.cook_time} min</p>
+          </div>
+          <div>
+            <p className="text-blue-800 font-semibold text-sm">Total Time</p>
+            <p className="text-2xl font-bold text-blue-900">{recipe.total_time} min</p>
           </div>
           <div>
             <p className="text-blue-800 font-semibold text-sm">Servings</p>
