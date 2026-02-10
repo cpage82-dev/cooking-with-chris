@@ -7,8 +7,8 @@ from . import views
 app_name = 'users'
 
 urlpatterns = [
-    # User registration (will be commented out later per requirements)
-    path('', views.register_user, name='register-user'),
+    # User registration - DISABLED (admins create users manually via Django admin)
+    # path('', views.register_user, name='register-user'),
     
     # Current user profile (view, update, delete)
     path('profile/', views.UserProfileView.as_view(), name='profile'),
