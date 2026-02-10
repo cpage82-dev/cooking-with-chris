@@ -13,6 +13,7 @@ from drf_spectacular.views import (
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
+    path('nested_admin/', include('nested_admin.urls')),
     
     # API v1
     path('api/v1/', include([

@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     'drf_spectacular',
+    'nested_admin',
     
     # Local apps
     'apps.users',

@@ -1,8 +1,8 @@
 """
 Django admin configuration for Recipe models.
 """
-
 from django.contrib import admin
+import nested_admin
 from .models import (
     Recipe,
     IngredientSection,
@@ -12,7 +12,7 @@ from .models import (
 )
 
 
-class IngredientInline(admin.TabularInline):
+class IngredientInline(nested_admin.NestedTabularInline):
     """Inline admin for ingredients within a section."""
     model = Ingredient
     extra = 1
@@ -20,16 +20,16 @@ class IngredientInline(admin.TabularInline):
     ordering = ['ingredient_order']
 
 
-class IngredientSectionInline(admin.StackedInline):
+class IngredientSectionInline(nested_admin.NestedStackedInline):
     """Inline admin for ingredient sections within a recipe."""
     model = IngredientSection
     extra = 1
     fields = ['section_title', 'section_order']
     ordering = ['section_order']
-    show_change_link = True
+    inlines = [IngredientInline]  # Now this works!
 
 
-class InstructionInline(admin.TabularInline):
+class InstructionInline(nested_admin.NestedTabularInline):
     """Inline admin for instructions within a section."""
     model = Instruction
     extra = 1
@@ -37,17 +37,17 @@ class InstructionInline(admin.TabularInline):
     ordering = ['step_order']
 
 
-class InstructionSectionInline(admin.StackedInline):
+class InstructionSectionInline(nested_admin.NestedStackedInline):
     """Inline admin for instruction sections within a recipe."""
     model = InstructionSection
     extra = 1
     fields = ['section_title', 'section_order']
     ordering = ['section_order']
-    show_change_link = True
+    inlines = [InstructionInline]  # Now this works!
 
 
 @admin.register(Recipe)
-class RecipeAdmin(admin.ModelAdmin):
+class RecipeAdmin(nested_admin.NestedModelAdmin):
     """Admin interface for Recipe model."""
     
     list_display = [
@@ -81,12 +81,12 @@ class RecipeAdmin(admin.ModelAdmin):
     
     readonly_fields = ['created_at', 'updated_at', 'deleted_at']
     
-    # Show inline sections only when editing existing recipe
+    # Nested inlines now work!
     inlines = [IngredientSectionInline, InstructionSectionInline]
 
 
 @admin.register(IngredientSection)
-class IngredientSectionAdmin(admin.ModelAdmin):
+class IngredientSectionAdmin(nested_admin.NestedModelAdmin):
     """Admin interface for Ingredient Sections."""
     
     list_display = ['recipe', 'section_title', 'section_order']
@@ -98,7 +98,7 @@ class IngredientSectionAdmin(admin.ModelAdmin):
 
 
 @admin.register(InstructionSection)
-class InstructionSectionAdmin(admin.ModelAdmin):
+class InstructionSectionAdmin(nested_admin.NestedModelAdmin):
     """Admin interface for Instruction Sections."""
     
     list_display = ['recipe', 'section_title', 'section_order']
