@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 *.so
 .Python
 build/
@@ -36,6 +37,7 @@ db.sqlite3-journal
 # Environment
 .env
 .env.local
+.env.*.local
 
 # IDEs
 .vscode/
