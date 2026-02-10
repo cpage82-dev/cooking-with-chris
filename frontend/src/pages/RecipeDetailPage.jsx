@@ -21,19 +21,21 @@ const RecipeDetailPage = () => {
   }, [id]);
 
   const fetchRecipe = async () => {
-    setLoading(true);
-    setError('');
+  setLoading(true);
+  setError('');
 
-    try {
-      const data = await recipeService.getRecipe(id);
-      setRecipe(data);
-    } catch (err) {
-      setError('Recipe not found or failed to load.');
-      console.error('Error fetching recipe:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const data = await recipeService.getRecipe(id);
+    console.log('Recipe data:', data); // ADD THIS LINE
+    console.log('Recipe image field:', data.recipe_image); // ADD THIS LINE
+    setRecipe(data);
+  } catch (err) {
+    setError('Recipe not found or failed to load.');
+    console.error('Error fetching recipe:', err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDelete = async () => {
     try {

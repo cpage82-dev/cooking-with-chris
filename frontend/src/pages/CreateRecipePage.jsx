@@ -270,59 +270,60 @@ const CreateRecipePage = () => {
     return true;
   };
 
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+// Handle form submission
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
 
-    if (!validateForm()) {
-      return;
+  if (!validateForm()) {
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    // Prepare data for API (including image)
+    const recipeData = {
+      recipe_name: formData.recipe_name.trim(),
+      recipe_description: formData.recipe_description.trim(),
+      course_type: formData.course_type,
+      recipe_type: formData.recipe_type,
+      primary_protein: formData.primary_protein,
+      ethnic_style: formData.ethnic_style,
+      prep_time: parseInt(formData.prep_time),
+      cook_time: parseInt(formData.cook_time),
+      number_servings: parseInt(formData.number_servings),
+      ingredient_sections: ingredientSections,
+      instruction_sections: instructionSections,
+    };
+
+    // Add image if user selected one
+    if (formData.recipe_image) {
+      recipeData.recipe_image = formData.recipe_image;
     }
 
-    setLoading(true);
-
-    try {
-      // Prepare data for API
-      const recipeData = {
-        recipe_name: formData.recipe_name.trim(),
-        recipe_description: formData.recipe_description.trim(),
-        course_type: formData.course_type,
-        recipe_type: formData.recipe_type,
-        primary_protein: formData.primary_protein,
-        ethnic_style: formData.ethnic_style,
-        prep_time: parseInt(formData.prep_time),
-        cook_time: parseInt(formData.cook_time),
-        number_servings: parseInt(formData.number_servings),
-        ingredient_sections: ingredientSections,
-        instruction_sections: instructionSections,
-      };
-
-      // Note: Image upload will be handled separately if needed
-      // For now, we're not including recipe_image in the API call
-      // You can add Cloudinary upload logic here if needed
-
-      const newRecipe = await recipeService.createRecipe(recipeData);
-      
-      // Redirect to the new recipe
-      navigate(`/recipes/${newRecipe.id}`);
-    } catch (err) {
-      console.error('Error creating recipe:', err);
-      if (err.response?.data) {
-        const errorData = err.response.data;
-        if (typeof errorData === 'object') {
-          // Extract first error message
-          const firstError = Object.values(errorData)[0];
-          setError(Array.isArray(firstError) ? firstError[0] : firstError);
-        } else {
-          setError('Failed to create recipe. Please check your inputs.');
-        }
+    const newRecipe = await recipeService.createRecipe(recipeData);
+    
+    // Redirect to the new recipe
+    navigate(`/recipes/${newRecipe.id}`);
+  } catch (err) {
+    console.error('Error creating recipe:', err);
+    if (err.response?.data) {
+      const errorData = err.response.data;
+      if (typeof errorData === 'object') {
+        // Extract first error message
+        const firstError = Object.values(errorData)[0];
+        setError(Array.isArray(firstError) ? firstError[0] : firstError);
       } else {
-        setError('Failed to create recipe. Please try again.');
+        setError('Failed to create recipe. Please check your inputs.');
       }
-    } finally {
-      setLoading(false);
+    } else {
+      setError('Failed to create recipe. Please try again.');
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="max-w-4xl mx-auto">

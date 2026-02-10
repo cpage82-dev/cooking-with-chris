@@ -8,6 +8,7 @@ Provides:
 - Update recipes (owner or admin only)
 - Delete recipes (owner or admin only, soft delete)
 """
+import json
 
 from rest_framework import generics, permissions, status, filters
 from rest_framework.response import Response
@@ -52,33 +53,12 @@ class IsOwnerOrAdminOrReadOnly(permissions.BasePermission):
 class RecipeListCreateView(generics.ListCreateAPIView):
     """
     API endpoint for listing and creating recipes.
-    
-    GET /api/v1/recipes/
-        Returns paginated list of recipes
-        Supports search by recipe name or ingredient name
-        Supports filtering by course_type, recipe_type, protein, etc.
-        Default pagination: 20 per page
-    
-    POST /api/v1/recipes/
-        Creates new recipe (authenticated users only)
-        Automatically sets current user as recipe creator
-    
-    Query Parameters:
-        search: Search in recipe name and ingredient names
-        course_type: Filter by course type
-        recipe_type: Filter by recipe type
-        primary_protein: Filter by primary protein
-        ethnic_style: Filter by ethnic style
-        uploaded_by: Filter by user ID who created recipe
-        min_servings: Minimum number of servings (>=)
-        time_needed: Filter by total time (e.g., "30", "60", "120", "121+")
-        page: Page number for pagination
     """
     
     permission_classes = [IsOwnerOrAdminOrReadOnly]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['created_at', 'recipe_name', 'total_time']
-    ordering = ['-created_at']  # Default ordering
+    ordering = ['-created_at']
     
     def get_serializer_class(self):
         """Use different serializers for list vs create."""
@@ -87,29 +67,20 @@ class RecipeListCreateView(generics.ListCreateAPIView):
         return RecipeListSerializer
     
     def get_queryset(self):
-        """
-        Get filtered queryset based on query parameters.
-        
-        Always excludes soft-deleted recipes.
-        Uses select_related and prefetch_related to avoid N+1 queries.
-        """
-        # Base queryset with optimizations to prevent N+1 queries
+        """Get filtered queryset based on query parameters."""
         queryset = Recipe.objects.filter(deleted=False).select_related('user').prefetch_related(
             'ingredient_sections__ingredients',
             'instruction_sections__instructions'
         )
         
-        # Search functionality (FIXED: removed SQL injection vulnerability)
+        # Search functionality
         search_query = self.request.query_params.get('search', '').strip()
         if search_query and len(search_query) >= 2:
-            # Search in recipe name OR ingredient names
             queryset = queryset.filter(
                 Q(recipe_name__icontains=search_query) |
                 Q(ingredient_sections__ingredients__ingredient_name__icontains=search_query)
             ).distinct()
             
-            # Priority ordering: recipe name matches first, then ingredient matches
-            # Using Case/When to avoid SQL injection
             queryset = queryset.annotate(
                 name_match=Case(
                     When(recipe_name__icontains=search_query, then=Value(0)),
@@ -138,7 +109,7 @@ class RecipeListCreateView(generics.ListCreateAPIView):
         if ethnic_style:
             queryset = queryset.filter(ethnic_style=ethnic_style)
         
-        # Filter by uploaded_by (user ID)
+        # Filter by uploaded_by
         uploaded_by = self.request.query_params.get('uploaded_by')
         if uploaded_by:
             try:
@@ -152,7 +123,6 @@ class RecipeListCreateView(generics.ListCreateAPIView):
             try:
                 servings = int(min_servings)
                 if servings == 10:
-                    # "10+" means >= 10
                     queryset = queryset.filter(number_servings__gte=10)
                 else:
                     queryset = queryset.filter(number_servings__gte=servings)
@@ -173,28 +143,77 @@ class RecipeListCreateView(generics.ListCreateAPIView):
         
         return queryset
     
+    def create(self, request, *args, **kwargs):
+        """
+        Override create to handle multipart/form-data with JSON fields.
+        """
+        # Create a regular dict from request.data
+        data = {}
+        
+        # Copy all fields from request.data
+        for key in request.data.keys():
+            data[key] = request.data[key]
+        
+        # DEBUG: Print what we received
+        print("=" * 80)
+        print("RECEIVED DATA KEYS:", data.keys())
+        for key, value in data.items():
+            if isinstance(value, (str, int)):
+                print(f"{key}: {type(value)} = {value}")
+            else:
+                print(f"{key}: {type(value)} = [FILE or COMPLEX DATA]")
+        print("=" * 80)
+        
+        # Parse JSON strings for nested sections
+        if 'ingredient_sections' in data and isinstance(data['ingredient_sections'], str):
+            try:
+                data['ingredient_sections'] = json.loads(data['ingredient_sections'])
+                print("PARSED ingredient_sections successfully")
+            except json.JSONDecodeError as e:
+                print(f"JSON DECODE ERROR (ingredients): {e}")
+                return Response(
+                    {'ingredient_sections': f'Invalid JSON format: {str(e)}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        if 'instruction_sections' in data and isinstance(data['instruction_sections'], str):
+            try:
+                data['instruction_sections'] = json.loads(data['instruction_sections'])
+                print("PARSED instruction_sections successfully")
+            except json.JSONDecodeError as e:
+                print(f"JSON DECODE ERROR (instructions): {e}")
+                return Response(
+                    {'instruction_sections': f'Invalid JSON format: {str(e)}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Create serializer with parsed data
+        serializer = self.get_serializer(data=data)
+        
+        # Check validation
+        if not serializer.is_valid():
+            print("VALIDATION ERRORS:")
+            print(serializer.errors)
+            print("=" * 80)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Save with current user
+        self.perform_create(serializer)
+        
+        # Return created recipe
+        recipe = serializer.instance
+        detail_serializer = RecipeDetailSerializer(recipe)
+        headers = self.get_success_headers(detail_serializer.data)
+        return Response(detail_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
     def perform_create(self, serializer):
-        """
-        Save recipe with current user as creator.
-        """
+        """Save recipe with current user as creator."""
         serializer.save(user=self.request.user)
 
 
 class RecipeDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     API endpoint for retrieving, updating, and deleting a recipe.
-    
-    GET /api/v1/recipes/:id/
-        Returns complete recipe details with ingredients and instructions
-    
-    PUT /api/v1/recipes/:id/
-        Updates recipe (owner or admin only)
-    
-    PATCH /api/v1/recipes/:id/
-        Partially updates recipe (owner or admin only)
-    
-    DELETE /api/v1/recipes/:id/
-        Soft deletes recipe (owner or admin only)
     """
     
     permission_classes = [IsOwnerOrAdminOrReadOnly]
@@ -207,31 +226,21 @@ class RecipeDetailView(generics.RetrieveUpdateDestroyAPIView):
         return RecipeDetailSerializer
     
     def get_queryset(self):
-        """
-        Only return non-deleted recipes.
-        Use prefetch_related to avoid N+1 queries when fetching ingredients and instructions.
-        """
+        """Only return non-deleted recipes."""
         return Recipe.objects.filter(deleted=False).select_related('user').prefetch_related(
             'ingredient_sections__ingredients',
             'instruction_sections__instructions',
         )
     
     def perform_destroy(self, instance):
-        """
-        Soft delete recipe instead of permanent deletion.
-        
-        Sets deleted=True and deleted_at timestamp.
-        Recipe remains in database but is hidden from users.
-        """
+        """Soft delete recipe."""
         from django.utils import timezone
         instance.deleted = True
         instance.deleted_at = timezone.now()
         instance.save()
     
     def destroy(self, request, *args, **kwargs):
-        """
-        Handle DELETE request with custom response.
-        """
+        """Handle DELETE request."""
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(

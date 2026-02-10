@@ -6,6 +6,7 @@ This module provides serializers for:
 - Recipe detail view (complete with ingredients and instructions)
 - Recipe create/update operations
 """
+import json
 
 from rest_framework import serializers
 from .models import (
@@ -181,6 +182,8 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
     Includes all recipe information with nested ingredients and instructions.
     """
     
+    recipe_image = serializers.SerializerMethodField()
+    thumbnail_url = serializers.SerializerMethodField()
     creator_name = serializers.SerializerMethodField()
     creator_id = serializers.SerializerMethodField()
     total_time = serializers.SerializerMethodField()
@@ -194,6 +197,7 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
             'recipe_name',
             'recipe_description',
             'recipe_image',
+            'thumbnail_url',
             'course_type',
             'recipe_type',
             'primary_protein',
@@ -210,6 +214,28 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
             'instruction_sections',
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'total_time']
+    
+    def get_recipe_image(self, obj):
+        """Return full Cloudinary URL for recipe image."""
+        if obj.recipe_image:
+            try:
+                return obj.recipe_image.url
+            except (AttributeError, ValueError):
+                return None
+        return None
+    
+    def get_thumbnail_url(self, obj):
+        """Return Cloudinary thumbnail URL (80x80)."""
+        if obj.recipe_image:
+            try:
+                url = obj.recipe_image.url
+                if 'cloudinary.com' in url and '/upload/' in url:
+                    parts = url.split('/upload/')
+                    return f"{parts[0]}/upload/w_80,h_80,c_fill,q_auto,f_auto/{parts[1]}"
+                return url
+            except (AttributeError, ValueError):
+                pass
+        return "https://as1.ftcdn.net/v2/jpg/00/81/88/98/1000_F_81889870_D1KroNymRQ1EfNZu8GDR0ZOxQSgocxUf.jpg"
     
     def get_creator_name(self, obj):
         """Return creator's full name or 'Anonymous User'."""
@@ -233,8 +259,8 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     Handles nested creation/update of ingredient and instruction sections.
     """
     
-    ingredient_sections = IngredientSectionSerializer(many=True)
-    instruction_sections = InstructionSectionSerializer(many=True)
+    ingredient_sections = IngredientSectionSerializer(many=True)  # Back to nested
+    instruction_sections = InstructionSectionSerializer(many=True)  # Back to nested
     
     class Meta:
         model = Recipe
@@ -256,14 +282,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
     
     def validate_recipe_name(self, value):
-        """
-        Validate recipe name uniqueness and length.
-        
-        Rules:
-        - Max 150 characters
-        - Must be unique globally (case-insensitive)
-        - If editing, allow same name for same recipe
-        """
+        """Validate recipe name uniqueness and length."""
         if len(value) > 150:
             raise serializers.ValidationError(
                 "This section is capped at 150 characters."
@@ -293,15 +312,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         return value.strip()
     
     def validate(self, data):
-        """
-        Validate complete recipe data.
-        
-        Rules:
-        - Must have at least one ingredient section
-        - Each ingredient section must have at least one ingredient
-        - Must have at least one instruction section
-        - Each instruction section must have at least one instruction
-        """
+        """Validate complete recipe data."""
         # Validate ingredient sections
         ingredient_sections = data.get('ingredient_sections', [])
         if not ingredient_sections:
@@ -331,9 +342,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         return data
     
     def create(self, validated_data):
-        """
-        Create new recipe with nested ingredients and instructions.
-        """
+        """Create new recipe with nested ingredients and instructions."""
         ingredient_sections_data = validated_data.pop('ingredient_sections')
         instruction_sections_data = validated_data.pop('instruction_sections')
         
@@ -371,12 +380,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         return recipe
     
     def update(self, instance, validated_data):
-        """
-        Update recipe with nested ingredients and instructions.
-        
-        Strategy: Delete all existing sections and recreate from scratch.
-        This is simpler than complex diff/merge logic.
-        """
+        """Update recipe with nested ingredients and instructions."""
         ingredient_sections_data = validated_data.pop('ingredient_sections', None)
         instruction_sections_data = validated_data.pop('instruction_sections', None)
         
@@ -387,10 +391,8 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         
         # Update ingredient sections if provided
         if ingredient_sections_data is not None:
-            # Delete existing sections (CASCADE deletes ingredients)
             instance.ingredient_sections.all().delete()
             
-            # Create new sections and ingredients
             for section_data in ingredient_sections_data:
                 ingredients_data = section_data.pop('ingredients')
                 ingredient_section = IngredientSection.objects.create(
@@ -406,10 +408,8 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         
         # Update instruction sections if provided
         if instruction_sections_data is not None:
-            # Delete existing sections (CASCADE deletes instructions)
             instance.instruction_sections.all().delete()
             
-            # Create new sections and instructions
             for section_data in instruction_sections_data:
                 instructions_data = section_data.pop('instructions')
                 instruction_section = InstructionSection.objects.create(
