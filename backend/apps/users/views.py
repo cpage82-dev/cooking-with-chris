@@ -5,8 +5,9 @@ Views for User-related API endpoints.
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from .models import User
-from .serializers import UserProfileSerializer, UserSerializer
+from .serializers import UserProfileSerializer, UserSerializer, UserCreateSerializer
 
 
 class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
@@ -100,3 +101,41 @@ def users_with_recipes_view(request):
     
     serializer = UserListSerializer(users, many=True)
     return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+    """
+    Register a new user.
+    
+    POST /api/v1/users/
+        Request body:
+            {
+                "email": "user@example.com",
+                "password": "password123",
+                "first_name": "John",
+                "last_name": "Doe"
+            }
+        
+        Response:
+            {
+                "id": 1,
+                "email": "user@example.com",
+                "first_name": "John",
+                "last_name": "Doe",
+                "is_admin": false
+            }
+    """
+    serializer = UserCreateSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        user = serializer.save()
+        return Response(
+            UserSerializer(user).data,
+            status=status.HTTP_201_CREATED
+        )
+    
+    return Response(
+        serializer.errors,
+        status=status.HTTP_400_BAD_REQUEST
+    )

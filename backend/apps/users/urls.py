@@ -1,13 +1,15 @@
 """
 URL configuration for Users app.
 """
-
 from django.urls import path
 from . import views
 
 app_name = 'users'
 
 urlpatterns = [
+    # User registration (will be commented out later per requirements)
+    path('', views.register_user, name='register-user'),
+    
     # Current user profile (view, update, delete)
     path('profile/', views.UserProfileView.as_view(), name='profile'),
     

@@ -195,7 +195,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for creating new users.
     
-    Only used by admins to manually create user accounts.
+    Used for user registration (will be disabled later - admins create users manually).
     """
     
     password = serializers.CharField(
@@ -212,8 +212,18 @@ class UserCreateSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'password',
-            'is_admin',
         ]
+    
+    def validate_email(self, value):
+        """
+        Validate email is unique (case-insensitive).
+        """
+        email = value.lower().strip()
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError(
+                "A user with this email already exists."
+            )
+        return email
     
     def validate_password(self, value):
         """Validate password strength."""
@@ -225,6 +235,9 @@ class UserCreateSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         """Create new user with hashed password."""
+        # Normalize email to lowercase
+        validated_data['email'] = validated_data['email'].lower().strip()
+        
         password = validated_data.pop('password')
         user = User.objects.create_user(
             password=password,
