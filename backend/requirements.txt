@@ -16,6 +16,7 @@ django-nested-admin==4.1.6
 django-ratelimit==4.1.0
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
+dj-database-url==0.5.0
 drf-spectacular==0.27.0
 factory-boy==3.3.0
 Faker==40.4.0

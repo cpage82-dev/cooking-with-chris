@@ -1,6 +1,7 @@
 """
 Django settings for Cooking with Chris project.
 """
+import os
 
 from pathlib import Path
 from datetime import timedelta
@@ -15,7 +16,11 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-local-dev-key-change-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.onrender.com',  # Allow all Render subdomains
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -79,16 +84,16 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DATABASE_NAME', default='cooking_with_chris'),
-        'USER': config('DATABASE_USER', default='postgres'),
-        'PASSWORD': config('DATABASE_PASSWORD', default='postgres'),
-        'HOST': config('DATABASE_HOST', default='localhost'),
-        'PORT': config('DATABASE_PORT', default='5432'),
-        'CONN_MAX_AGE': 600,  # Add this for connection pooling
+        'NAME': config('DB_NAME', default='cooking_with_chris'),
+        'USER': config('DB_USER', default='postgres'),
+        'PASSWORD': config('DB_PASSWORD', default=''),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', default='5432'),
+        'CONN_MAX_AGE': 600,
         'OPTIONS': {
             'connect_timeout': 10,
-            'options': '-c statement_timeout=30000'  # 30 second query timeout
-        }
+            'options': '-c statement_timeout=30000'
+        },
     }
 }
 
@@ -121,8 +126,9 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
@@ -185,19 +191,20 @@ SIMPLE_JWT = {
 }
 
 # CORS Configuration
-CORS_ALLOWED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:5173,http://127.0.0.1:5173',
-    cast=Csv()
-)
+# CORS - Add your Render frontend URL
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://cooking-with-chris.onrender.com',  # Your frontend URL
+]
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF Configuration (required for Django 6.0+)
-CSRF_TRUSTED_ORIGINS = config(
-    'CORS_ALLOWED_ORIGINS',  # Reuse same origins as CORS
-    default='http://localhost:5173,http://127.0.0.1:5173',
-    cast=Csv()
-)
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://cooking-with-chris.onrender.com',
+]
 
 # Email Configuration (SendGrid)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
