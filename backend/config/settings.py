@@ -82,15 +82,33 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database configuration
-# Uses DATABASE_URL from environment (Render) or falls back to local PostgreSQL
-DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default='postgresql://postgres:@localhost:5432/cooking_with_chris'),
-        conn_max_age=600,
-        conn_health_checks=True,
-        ssl_require=False,  # Render handles SSL automatically
-    )
-}
+# Priority: DATABASE_URL (Render) > Individual vars (Local)
+if config('DATABASE_URL', default=None):
+    # Render deployment - use DATABASE_URL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Local development - use individual variables
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME', default='cooking_with_chris'),
+            'USER': config('DB_USER', default='postgres'),
+            'PASSWORD': config('DB_PASSWORD', default='Miles@123!HTX'),  # ← ADD YOUR LOCAL PASSWORD
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default='5432'),
+            'CONN_MAX_AGE': 600,
+            'OPTIONS': {
+                'connect_timeout': 10,
+                'options': '-c statement_timeout=30000'
+            },
+        }
+    }
 
 # Custom User Model
 AUTH_USER_MODEL = 'users.User'
