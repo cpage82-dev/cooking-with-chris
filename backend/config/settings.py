@@ -21,6 +21,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'cooking-with-chris.onrender.com',  # ← Your backend URL (without https://)
+    'cooking-with-chris-frontend.onrender.com',
     '.onrender.com',  # Allow all Render subdomains
 ]
 
