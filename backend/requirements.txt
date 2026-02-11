@@ -12,10 +12,10 @@ Django==6.0.2
 django-cloudinary-storage==0.3.0
 django-cors-headers==4.3.1
 django-filter==25.2
+django-nested-admin==4.1.6
 django-ratelimit==4.1.0
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
-django-nested-admin==4.0.2
 drf-spectacular==0.27.0
 factory-boy==3.3.0
 Faker==40.4.0
@@ -38,6 +38,7 @@ pytest-cov==4.1.0
 pytest-django==4.7.0
 python-decouple==3.8
 python-http-client==3.3.7
+python-monkey-business==1.1.0
 pytz==2025.2
 PyYAML==6.0.3
 referencing==0.37.0
@@ -53,5 +54,4 @@ tzdata==2025.3
 uritemplate==4.2.0
 urllib3==2.6.3
 webencodings==0.5.1
-
 whitenoise==6.11.0
