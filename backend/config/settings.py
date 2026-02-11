@@ -2,6 +2,7 @@
 Django settings for Cooking with Chris project.
 """
 import os
+import dj_database_url
 
 from pathlib import Path
 from datetime import timedelta
@@ -81,20 +82,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database configuration
+# Uses DATABASE_URL from environment (Render) or falls back to local PostgreSQL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='cooking_with_chris'),
-        'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
-        'CONN_MAX_AGE': 600,
-        'OPTIONS': {
-            'connect_timeout': 10,
-            'options': '-c statement_timeout=30000'
-        },
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL', default='postgresql://postgres:@localhost:5432/cooking_with_chris'),
+        conn_max_age=600,
+        conn_health_checks=True,
+        ssl_require=False,  # Render handles SSL automatically
+    )
 }
 
 # Custom User Model
