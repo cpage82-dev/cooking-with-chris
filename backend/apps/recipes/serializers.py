@@ -160,15 +160,13 @@ class RecipeListSerializer(serializers.ModelSerializer):
         If no image, returns default image URL.
         """
         if obj.recipe_image:
-            # CloudinaryField has a .url property
             try:
                 url = obj.recipe_image.url
                 if 'cloudinary.com' in url and '/upload/' in url:
                     parts = url.split('/upload/')
-                    return f"{parts[0]}/upload/w_80,h_80,c_fill,q_auto,f_auto/{parts[1]}"
+                    return f"{parts[0]}/upload/w_640,h_360,c_fill,g_auto,q_auto,f_auto/{parts[1]}"
                 return url
             except (AttributeError, ValueError):
-                # If Cloudinary URL generation fails, return None
                 pass
     
     # Default image
@@ -231,7 +229,7 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
                 url = obj.recipe_image.url
                 if 'cloudinary.com' in url and '/upload/' in url:
                     parts = url.split('/upload/')
-                    return f"{parts[0]}/upload/w_80,h_80,c_fill,q_auto,f_auto/{parts[1]}"
+                    return f"{parts[0]}/upload/w_640,h_360,c_fill,g_auto,q_auto,f_auto/{parts[1]}"
                 return url
             except (AttributeError, ValueError):
                 pass

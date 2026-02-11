@@ -35,9 +35,10 @@ const Navbar = () => {
               <>
                 <Link
                   to="/recipes/new"
-                  className="text-gray-700 hover:text-blue-600 transition"
-                >
-                  Create Recipe
+                  role="button"
+                  className="inline-flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                >   
+                  Create a Recipe
                 </Link>
                 <div className="flex items-center space-x-4">
                   <span className="text-gray-600">

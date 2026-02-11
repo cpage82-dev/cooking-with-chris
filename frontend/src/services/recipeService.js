@@ -49,13 +49,40 @@ createRecipe: async (recipeData) => {
   return response.data;
 },
 
-  /**
-   * Update existing recipe
-   */
-  updateRecipe: async (id, recipeData) => {
+/**
+ * Update existing recipe (with image upload support)
+ */
+updateRecipe: async (id, recipeData) => {
+  // If recipe has FormData fields (image), use FormData
+  if (recipeData.recipe_image instanceof File) {
+    const formData = new FormData();
+    
+    // Add basic fields
+    formData.append('recipe_name', recipeData.recipe_name);
+    formData.append('recipe_description', recipeData.recipe_description);
+    formData.append('course_type', recipeData.course_type);
+    formData.append('recipe_type', recipeData.recipe_type);
+    formData.append('primary_protein', recipeData.primary_protein);
+    formData.append('ethnic_style', recipeData.ethnic_style);
+    formData.append('prep_time', recipeData.prep_time);
+    formData.append('cook_time', recipeData.cook_time);
+    formData.append('number_servings', recipeData.number_servings);
+    
+    // Add new image
+    formData.append('recipe_image', recipeData.recipe_image);
+    
+    // Add nested sections as JSON strings
+    formData.append('ingredient_sections', JSON.stringify(recipeData.ingredient_sections));
+    formData.append('instruction_sections', JSON.stringify(recipeData.instruction_sections));
+    
+    const response = await api.put(`/recipes/${id}/`, formData);
+    return response.data;
+  } else {
+    // No new image, send as JSON
     const response = await api.put(`/recipes/${id}/`, recipeData);
     return response.data;
-  },
+  }
+},
 
   /**
    * Delete recipe (soft delete)

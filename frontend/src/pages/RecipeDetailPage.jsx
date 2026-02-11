@@ -53,6 +53,16 @@ const RecipeDetailPage = () => {
     user.id === recipe.creator_id || user.is_admin
   );
 
+  const formatDate = (isoString) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -93,7 +103,9 @@ const RecipeDetailPage = () => {
             <h1 className="text-4xl font-bold text-gray-800 mb-2">
               {recipe.recipe_name}
             </h1>
-            <p className="text-gray-600">By {recipe.creator_name} | Created {recipe.created_at}</p>
+            <p className="text-gray-600">
+              By {recipe.creator_name} | Created {formatDate(recipe.created_at)}
+            </p>
           </div>
 
           {canEdit && (

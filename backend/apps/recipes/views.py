@@ -9,11 +9,13 @@ Provides:
 - Delete recipes (owner or admin only, soft delete)
 """
 import json
+from urllib import request
 
 from rest_framework import generics, permissions, status, filters
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q, Case, When, Value, IntegerField
+from uritemplate import partial
 from .models import Recipe
 from .serializers import (
     RecipeListSerializer,
@@ -247,3 +249,43 @@ class RecipeDetailView(generics.RetrieveUpdateDestroyAPIView):
             {'message': 'Recipe deleted successfully.'},
             status=status.HTTP_200_OK
         )
+    
+    def update(self, request, *args, **kwargs):
+        """
+        Override update to handle multipart/form-data with JSON fields.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+    
+        # Create a regular dict from request.data
+        data = {}
+        for key in request.data.keys():
+            data[key] = request.data[key]
+    
+        # Parse JSON strings for nested sections if they exist
+        if 'ingredient_sections' in data and isinstance(data['ingredient_sections'], str):
+            try:
+                data['ingredient_sections'] = json.loads(data['ingredient_sections'])
+            except json.JSONDecodeError as e:
+                return Response(
+                    {'ingredient_sections': f'Invalid JSON format: {str(e)}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+    
+        if 'instruction_sections' in data and isinstance(data['instruction_sections'], str):
+            try:
+                data['instruction_sections'] = json.loads(data['instruction_sections'])
+            except json.JSONDecodeError as e:
+                return Response(
+                    {'instruction_sections': f'Invalid JSON format: {str(e)}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+    
+        # Use serializer to validate and update
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+    
+        # Return updated recipe using detail serializer
+        detail_serializer = RecipeDetailSerializer(serializer.instance)
+        return Response(detail_serializer.data)
