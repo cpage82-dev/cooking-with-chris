@@ -9,6 +9,11 @@ const HomePage = () => {
 
   return (
     <div className="text-center">
+      <img
+        src="https://res.cloudinary.com/cookingwithchris/image/upload/v1770841258/cooking-with-chris-logo_du0qzf.png"
+        alt="Cooking with Chris Logo"
+        className="mx-auto mb-6 h-40 w-auto object-contain"
+      />
       <h1 className="text-5xl font-bold text-gray-800 mb-4">
         Welcome to Cooking with Chris
       </h1>

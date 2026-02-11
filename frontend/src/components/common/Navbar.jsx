@@ -17,9 +17,16 @@ const Navbar = () => {
     <nav className="bg-white shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-blue-600">
-            Cooking with Chris
+          {/* Logo + Brand */}
+          <Link to="/" className="flex items-center space-x-3">
+            <img
+              src="https://res.cloudinary.com/cookingwithchris/image/upload/v1770841614/cooking-with-chris-logo-v3_c6eh2q.png"
+              alt="Cooking with Chris Logo"
+              className="h-14 w-auto object-contain"
+            />
+            <span className="text-2xl font-bold text-blue-600">
+              Cooking with Chris
+            </span>
           </Link>
 
           {/* Navigation Links */}

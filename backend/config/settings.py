@@ -20,6 +20,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
+    'cooking-with-chris.onrender.com',  # ← Your backend URL (without https://)
     '.onrender.com',  # Allow all Render subdomains
 ]
 
@@ -208,7 +209,7 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-    'https://cooking-with-chris.onrender.com',  # Your frontend URL
+    'https://cooking-with-chris-frontend.onrender.com',  # Your frontend URL
 ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -216,7 +217,7 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-    'https://cooking-with-chris.onrender.com',
+    'https://cooking-with-chris-frontend.onrender.com',
 ]
 
 # Email Configuration (SendGrid)
