@@ -49,7 +49,7 @@ const Navbar = () => {
                 </Link>
                 <div className="flex items-center space-x-4">
                   <span className="text-gray-600">
-                    <p>Welcome, {user?.first_name} {user?.last_name}!</p>
+                    <p>👤 Welcome, {user?.first_name} {user?.last_name}!</p>
                   </span>
                   <button
                     onClick={handleLogout}
