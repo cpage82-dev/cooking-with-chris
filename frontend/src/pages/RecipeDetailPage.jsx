@@ -16,26 +16,47 @@ const RecipeDetailPage = () => {
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // ✅ Back to Top state
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
   useEffect(() => {
     fetchRecipe();
   }, [id]);
 
-  const fetchRecipe = async () => {
-  setLoading(true);
-  setError('');
+  // ✅ Track scroll position and show/hide Back to Top
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
 
-  try {
-    const data = await recipeService.getRecipe(id);
-    console.log('Recipe data:', data); // ADD THIS LINE
-    console.log('Recipe image field:', data.recipe_image); // ADD THIS LINE
-    setRecipe(data);
-  } catch (err) {
-    setError('Recipe not found or failed to load.');
-    console.error('Error fetching recipe:', err);
-  } finally {
-    setLoading(false);
-  }
-};
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // initialize on mount
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const fetchRecipe = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const data = await recipeService.getRecipe(id);
+      console.log('Recipe data:', data); // ADD THIS LINE
+      console.log('Recipe image field:', data.recipe_image); // ADD THIS LINE
+      setRecipe(data);
+    } catch (err) {
+      setError('Recipe not found or failed to load.');
+      console.error('Error fetching recipe:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDelete = async () => {
     try {
@@ -89,6 +110,18 @@ const RecipeDetailPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* ✅ Back to Top Button */}
+      {showBackToTop && (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 rounded-full bg-blue-600 text-white px-4 py-3 shadow-lg hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+          aria-label="Back to top"
+        >
+          ↑ Back to Top
+        </button>
+      )}
+
       {/* Header */}
       <div className="mb-6">
         <Link
@@ -272,10 +305,7 @@ const RecipeDetailPage = () => {
 
       {/* Footer */}
       <div className="text-center py-6">
-        <Link
-          to="/recipes"
-          className="text-blue-600 hover:underline text-lg"
-        >
+        <Link to="/recipes" className="text-blue-600 hover:underline text-lg">
           ← Browse more recipes
         </Link>
       </div>
