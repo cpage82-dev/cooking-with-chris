@@ -44,13 +44,24 @@ const Navbar = () => {
                   to="/recipes/new"
                   role="button"
                   className="inline-flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-700 transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                >   
+                >
                   Create a Recipe
                 </Link>
+
                 <div className="flex items-center space-x-4">
-                  <span className="text-gray-600">
-                    <p>👤 Welcome, {user?.first_name} {user?.last_name}!</p>
+                  {/* ✅ Welcome message with clickable, underlined name */}
+                  <span className="text-gray-600 flex items-center gap-1">
+                    <span aria-hidden>👤</span>
+                    <span>Welcome,</span>
+                    <Link
+                      to="/profile"
+                      className="underline underline-offset-4 decoration-2 hover:text-gray-900 transition"
+                    >
+                      {user?.first_name} {user?.last_name}
+                    </Link>
+                    <span>!</span>
                   </span>
+
                   <button
                     onClick={handleLogout}
                     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
@@ -67,13 +78,16 @@ const Navbar = () => {
                 >
                   Login
                 </Link>
+
                 {/* Registration disabled - admins create users manually */}
-                {/* <Link
+                {/*
+                <Link
                   to="/register"
                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
                 >
                   Sign Up
-                </Link> */}
+                </Link>
+                */}
               </>
             )}
           </div>

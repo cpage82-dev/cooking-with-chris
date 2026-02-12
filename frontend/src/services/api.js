@@ -7,6 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 15000, // ✅ 15s timeout so UI won't hang forever
   // Don't set Content-Type here - let axios handle it based on data type
 });
 
@@ -46,7 +47,8 @@ api.interceptors.response.use(
         try {
           const response = await axios.post(
             `${API_BASE_URL}/auth/token/refresh/`,
-            { refresh: refreshToken }
+            { refresh: refreshToken },
+            { timeout: 15000 }
           );
           
           const { access } = response.data;

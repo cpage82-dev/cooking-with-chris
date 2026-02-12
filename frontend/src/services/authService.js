@@ -1,25 +1,57 @@
 /**
  * Authentication service
  */
-import api from './api';
+import api from "./api";
+
+const USER_KEY = "user";
+const ACCESS_KEY = "access_token";
+const REFRESH_KEY = "refresh_token";
 
 const authService = {
+  /**
+   * Get current user from localStorage
+   */
+  getCurrentUser: () => {
+    const userStr = localStorage.getItem(USER_KEY);
+    if (!userStr) return null;
+
+    try {
+      return JSON.parse(userStr);
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Persist current user to localStorage
+   */
+  setCurrentUser: (user) => {
+    if (!user) return;
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  },
+
+  /**
+   * Clear persisted user
+   */
+  clearCurrentUser: () => {
+    localStorage.removeItem(USER_KEY);
+  },
+
   /**
    * Login user
    */
   login: async (email, password) => {
-    const response = await api.post('/auth/login/', {
+    const response = await api.post("/auth/login/", {
       email: email.toLowerCase().trim(),
       password,
     });
-    
+
     const { access, refresh, user } = response.data;
-    
-    // Store tokens and user data
-    localStorage.setItem('access_token', access);
-    localStorage.setItem('refresh_token', refresh);
-    localStorage.setItem('user', JSON.stringify(user));
-    
+
+    localStorage.setItem(ACCESS_KEY, access);
+    localStorage.setItem(REFRESH_KEY, refresh);
+    authService.setCurrentUser(user);
+
     return user;
   },
 
@@ -27,13 +59,13 @@ const authService = {
    * Register new user
    */
   register: async (userData) => {
-    const response = await api.post('/users/', {
+    const response = await api.post("/users/", {
       email: userData.email.toLowerCase().trim(),
       password: userData.password,
       first_name: userData.firstName,
       last_name: userData.lastName,
     });
-    
+
     return response.data;
   },
 
@@ -41,49 +73,33 @@ const authService = {
    * Logout user
    */
   logout: async () => {
-    const refreshToken = localStorage.getItem('refresh_token');
-    
+    const refreshToken = localStorage.getItem(REFRESH_KEY);
+
     try {
       if (refreshToken) {
-        await api.post('/auth/logout/', { refresh: refreshToken });
+        await api.post("/auth/logout/", { refresh: refreshToken });
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
-      // Clear local storage regardless of API call result
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
+      localStorage.removeItem(ACCESS_KEY);
+      localStorage.removeItem(REFRESH_KEY);
+      authService.clearCurrentUser();
     }
-  },
-
-  /**
-   * Get current user from localStorage
-   */
-  getCurrentUser: () => {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      try {
-        return JSON.parse(userStr);
-      } catch (error) {
-        return null;
-      }
-    }
-    return null;
   },
 
   /**
    * Check if user is authenticated
    */
   isAuthenticated: () => {
-    return !!localStorage.getItem('access_token');
+    return !!localStorage.getItem(ACCESS_KEY);
   },
 
   /**
    * Request password reset
    */
   requestPasswordReset: async (email) => {
-    const response = await api.post('/auth/password-reset/', {
+    const response = await api.post("/auth/password-reset/", {
       email: email.toLowerCase().trim(),
     });
     return response.data;
@@ -93,7 +109,7 @@ const authService = {
    * Confirm password reset
    */
   confirmPasswordReset: async (token, newPassword, confirmPassword) => {
-    const response = await api.post('/auth/password-reset-confirm/', {
+    const response = await api.post("/auth/password-reset-confirm/", {
       token,
       new_password: newPassword,
       confirm_password: confirmPassword,

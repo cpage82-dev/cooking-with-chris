@@ -12,6 +12,7 @@ import CreateRecipePage from './pages/CreateRecipePage';
 import EditRecipePage from './pages/EditRecipePage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Navbar from './components/common/Navbar';
+import UserProfile from './pages/UserProfile';
 
 function App() {
   return (
@@ -35,6 +36,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <CreateRecipePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <UserProfile />
                   </ProtectedRoute>
                 }
               />
