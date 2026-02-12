@@ -10,8 +10,12 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Feature flag to control registration link visibility
+  const showRegistrationLink = false; // Change to true when ready to enable sign-up
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -79,14 +83,16 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-blue-600 hover:underline">
-              Sign up
-            </Link>
-          </p>
-        </div>
+        {showRegistrationLink && (
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">
+              Don't have an account?{' '}
+              <Link to="/register" className="text-blue-600 hover:underline">
+                Sign up
+              </Link>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

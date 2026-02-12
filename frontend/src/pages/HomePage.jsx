@@ -65,7 +65,7 @@ const HomePage = () => {
           </div>
           <h3 className="text-2xl font-bold mb-2">Share Your Recipes</h3>
           <p className="text-gray-600">
-            Upload your own recipes and share them with the community.
+            Registered users can upload their own recipes and share them with the community.
           </p>
         </div>
 
