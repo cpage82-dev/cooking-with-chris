@@ -14,6 +14,8 @@ from django.utils.crypto import get_random_string
 from datetime import timedelta
 from apps.users.models import User, PasswordResetToken
 from apps.users.serializers import UserSerializer
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -108,17 +110,6 @@ def logout_view(request):
 def password_reset_request_view(request):
     """
     Request password reset - sends email with reset link.
-    
-    POST /api/v1/auth/password-reset/
-        Request body:
-            {
-                "email": "user@example.com"
-            }
-        
-        Response (always success for security):
-            {
-                "message": "If an account exists with that email, you'll receive a reset link shortly."
-            }
     """
     email = request.data.get('email', '').lower().strip()
     
@@ -153,15 +144,40 @@ def password_reset_request_view(request):
             token_expiry=token_expiry
         )
         
-        # TODO: Send email via SendGrid
-        # For now, we'll just create the token
-        # In production, send email with link: 
-        # https://yoursite.com/reset-password?token={reset_token}
+        # Build reset URL
+        frontend_url = settings.FRONTEND_URL
+        reset_link = f"{frontend_url}/reset-password?token={reset_token}"
         
-        # Email template:
-        # Subject: Reset Your Password
-        # Body: Click here to reset your password: [LINK]
-        #       This link expires in 1 hour.
+        # Send email via SendGrid
+        subject = 'Reset Your Password - Cooking with Chris'
+        message = f"""
+Hello {user.get_full_name()},
+
+You requested a password reset for your Cooking with Chris account.
+
+Click the link below to reset your password:
+
+{reset_link}
+
+This link will expire in 1 hour.
+
+If you didn't request this, please ignore this email.
+
+Best regards,
+Cooking with Chris Team
+        """
+        
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            # Log error but don't reveal to user
+            print(f"Error sending password reset email: {e}")
         
     except User.DoesNotExist:
         # Don't reveal that user doesn't exist

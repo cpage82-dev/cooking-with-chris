@@ -4,6 +4,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage'; 
 import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
 import RecipeListPage from './pages/RecipeListPage';
@@ -26,9 +28,11 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               {/* Registration disabled - admins create users manually */}
-	      {/* <Route path="/register" element={<RegisterPage />} /> */}
+	            {/* <Route path="/register" element={<RegisterPage />} /> */}
               <Route path="/recipes" element={<RecipeListPage />} />
               <Route path="/recipes/:id" element={<RecipeDetailPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />  
 
               {/* Protected routes */}
               <Route

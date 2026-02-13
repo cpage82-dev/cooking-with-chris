@@ -1,21 +1,33 @@
 /**
  * Login Page
+ * User authentication form
  */
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  const successMessage = location.state?.message;
+  
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuth();
-  const navigate = useNavigate();
-
   // Feature flag to control registration link visibility
-  const showRegistrationLink = false; // Change to true when ready to enable sign-up
+  const showRegistrationLink = false;
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +35,7 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
+      await login(formData.email, formData.password);
       navigate('/recipes');
     } catch (err) {
       setError(
@@ -39,6 +51,13 @@ const LoginPage = () => {
       <div className="bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-3xl font-bold text-center mb-6">Login</h2>
 
+        {/* Success message from password reset */}
+        {successMessage && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            {successMessage}
+          </div>
+        )}
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
@@ -53,8 +72,9 @@ const LoginPage = () => {
             <input
               type="email"
               id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
               required
             />
@@ -67,8 +87,9 @@ const LoginPage = () => {
             <input
               type="password"
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
               required
             />
@@ -93,6 +114,15 @@ const LoginPage = () => {
             </p>
           </div>
         )}
+        
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Forgot Your Password?{' '}
+            <Link to="/forgot-password" className="text-blue-600 hover:underline">
+              Reset It
+            </Link>
+          </p>
+        </div>  
       </div>
     </div>
   );

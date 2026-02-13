@@ -221,13 +221,19 @@ CSRF_TRUSTED_ORIGINS = [
     'https://cooking-with-chris-frontend.onrender.com',
 ]
 
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
+
 # Email Configuration (SendGrid)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'apikey'
 EMAIL_HOST_PASSWORD = config('SENDGRID_API_KEY', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@cookingwithchris.com')
+
+# Password reset token expiry (1 hour)
+PASSWORD_RESET_TIMEOUT = 3600  # seconds
 
 # Security Settings (uncomment for production)
 if not DEBUG:

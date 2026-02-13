@@ -116,6 +116,26 @@ const authService = {
     });
     return response.data;
   },
+
+    /**
+   * Request password reset email
+   */
+  requestPasswordReset: async (email) => {
+    const response = await api.post('/auth/password-reset/', { email });
+    return response.data;
+  },
+
+  /**
+   * Reset password with token
+   */
+  resetPassword: async (token, password, confirmPassword) => {
+    const response = await api.post('/auth/password-reset-confirm/', {
+      token,
+      new_password: password,
+      confirm_password: confirmPassword,
+    });
+    return response.data;
+  },
 };
 
 export default authService;
