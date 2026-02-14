@@ -5,6 +5,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import recipeService from '../services/recipeService';
+import CharacterCounter from '../components/common/CharacterCounter';
+
+// Character limits from backend models
+const CHAR_LIMITS = {
+  RECIPE_NAME: 150,
+  RECIPE_DESCRIPTION: 1000,
+  SECTION_TITLE: 150,
+  INGREDIENT_NAME: 150,
+  INSTRUCTION_STEP: 500,
+};
 
 const CreateRecipePage = () => {
   const navigate = useNavigate();
@@ -198,8 +208,16 @@ const CreateRecipePage = () => {
       setError('Recipe name is required');
       return false;
     }
+    if (formData.recipe_name.length > CHAR_LIMITS.RECIPE_NAME) {
+      setError(`Recipe name must be ${CHAR_LIMITS.RECIPE_NAME} characters or less`);
+      return false;
+    }
     if (!formData.recipe_description.trim()) {
       setError('Recipe description is required');
+      return false;
+    }
+    if (formData.recipe_description.length > CHAR_LIMITS.RECIPE_DESCRIPTION) {
+      setError(`Recipe description must be ${CHAR_LIMITS.RECIPE_DESCRIPTION} characters or less`);
       return false;
     }
     if (!formData.course_type) {
@@ -237,6 +255,10 @@ const CreateRecipePage = () => {
         setError('All ingredient sections must have a title');
         return false;
       }
+      if (section.section_title.length > CHAR_LIMITS.SECTION_TITLE) {
+        setError(`Ingredient section titles must be ${CHAR_LIMITS.SECTION_TITLE} characters or less`);
+        return false;
+      }
       if (section.ingredients.length === 0) {
         setError('Each ingredient section must have at least one ingredient');
         return false;
@@ -244,6 +266,10 @@ const CreateRecipePage = () => {
       for (const ingredient of section.ingredients) {
         if (!ingredient.ingredient_name.trim()) {
           setError('All ingredients must have a name');
+          return false;
+        }
+        if (ingredient.ingredient_name.length > CHAR_LIMITS.INGREDIENT_NAME) {
+          setError(`Ingredient names must be ${CHAR_LIMITS.INGREDIENT_NAME} characters or less`);
           return false;
         }
       }
@@ -255,6 +281,10 @@ const CreateRecipePage = () => {
         setError('All instruction sections must have a title');
         return false;
       }
+      if (section.section_title.length > CHAR_LIMITS.SECTION_TITLE) {
+        setError(`Instruction section titles must be ${CHAR_LIMITS.SECTION_TITLE} characters or less`);
+        return false;
+      }
       if (section.instructions.length === 0) {
         setError('Each instruction section must have at least one step');
         return false;
@@ -262,6 +292,10 @@ const CreateRecipePage = () => {
       for (const instruction of section.instructions) {
         if (!instruction.instruction_step.trim()) {
           setError('All instruction steps must have text');
+          return false;
+        }
+        if (instruction.instruction_step.length > CHAR_LIMITS.INSTRUCTION_STEP) {
+          setError(`Instruction steps must be ${CHAR_LIMITS.INSTRUCTION_STEP} characters or less`);
           return false;
         }
       }
@@ -343,14 +377,21 @@ const handleSubmit = async (e) => {
           <div className="space-y-4">
             {/* Recipe Name */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Recipe Name *
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-gray-700 font-medium">
+                  Recipe Name *
+                </label>
+                <CharacterCounter 
+                  current={formData.recipe_name.length} 
+                  max={CHAR_LIMITS.RECIPE_NAME} 
+                />
+              </div>
               <input
                 type="text"
                 name="recipe_name"
                 value={formData.recipe_name}
                 onChange={handleChange}
+                maxLength={CHAR_LIMITS.RECIPE_NAME}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 required
               />
@@ -358,13 +399,20 @@ const handleSubmit = async (e) => {
 
             {/* Description */}
             <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Description *
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-gray-700 font-medium">
+                  Description *
+                </label>
+                <CharacterCounter 
+                  current={formData.recipe_description.length} 
+                  max={CHAR_LIMITS.RECIPE_DESCRIPTION} 
+                />
+              </div>
               <textarea
                 name="recipe_description"
                 value={formData.recipe_description}
                 onChange={handleChange}
+                maxLength={CHAR_LIMITS.RECIPE_DESCRIPTION}
                 rows="4"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                 required
@@ -552,19 +600,29 @@ const handleSubmit = async (e) => {
           {ingredientSections.map((section, sectionIndex) => (
             <div key={sectionIndex} className="mb-6 p-4 border border-gray-200 rounded-lg">
               <div className="flex justify-between items-center mb-3">
-                <input
-                  type="text"
-                  value={section.section_title}
-                  onChange={(e) => updateIngredientSectionTitle(sectionIndex, e.target.value)}
-                  placeholder="Section title (e.g., 'For the Sauce')"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  required
-                />
+                <div className="flex-1 mr-2">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm text-gray-600">Section Title</span>
+                    <CharacterCounter 
+                      current={section.section_title.length} 
+                      max={CHAR_LIMITS.SECTION_TITLE} 
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={section.section_title}
+                    onChange={(e) => updateIngredientSectionTitle(sectionIndex, e.target.value)}
+                    placeholder="Section title (e.g., 'For the Sauce')"
+                    maxLength={CHAR_LIMITS.SECTION_TITLE}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    required
+                  />
+                </div>
                 {ingredientSections.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeIngredientSection(sectionIndex)}
-                    className="ml-2 bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition"
+                    className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition self-end"
                   >
                     Remove Section
                   </button>
@@ -572,44 +630,54 @@ const handleSubmit = async (e) => {
               </div>
 
               {section.ingredients.map((ingredient, ingredientIndex) => (
-                <div key={ingredientIndex} className="flex gap-2 mb-2">
-                  <input
-                    type="text"
-                    value={ingredient.ingredient_quantity}
-                    onChange={(e) =>
-                      updateIngredient(sectionIndex, ingredientIndex, 'ingredient_quantity', e.target.value)
-                    }
-                    placeholder="Qty"
-                    className="w-20 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                  <input
-                    type="text"
-                    value={ingredient.ingredient_uom}
-                    onChange={(e) =>
-                      updateIngredient(sectionIndex, ingredientIndex, 'ingredient_uom', e.target.value)
-                    }
-                    placeholder="UoM"
-                    className="w-24 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                  <input
-                    type="text"
-                    value={ingredient.ingredient_name}
-                    onChange={(e) =>
-                      updateIngredient(sectionIndex, ingredientIndex, 'ingredient_name', e.target.value)
-                    }
-                    placeholder="Ingredient name *"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    required
-                  />
-                  {section.ingredients.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeIngredient(sectionIndex, ingredientIndex)}
-                      className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition"
-                    >
-                      ×
-                    </button>
-                  )}
+                <div key={ingredientIndex} className="mb-2">
+                  <div className="flex justify-end mb-1">
+                    <CharacterCounter 
+                      current={ingredient.ingredient_name.length} 
+                      max={CHAR_LIMITS.INGREDIENT_NAME} 
+                      className="text-xs"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={ingredient.ingredient_quantity}
+                      onChange={(e) =>
+                        updateIngredient(sectionIndex, ingredientIndex, 'ingredient_quantity', e.target.value)
+                      }
+                      placeholder="Qty"
+                      className="w-20 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                    <input
+                      type="text"
+                      value={ingredient.ingredient_uom}
+                      onChange={(e) =>
+                        updateIngredient(sectionIndex, ingredientIndex, 'ingredient_uom', e.target.value)
+                      }
+                      placeholder="UoM"
+                      className="w-24 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                    <input
+                      type="text"
+                      value={ingredient.ingredient_name}
+                      onChange={(e) =>
+                        updateIngredient(sectionIndex, ingredientIndex, 'ingredient_name', e.target.value)
+                      }
+                      placeholder="Ingredient name *"
+                      maxLength={CHAR_LIMITS.INGREDIENT_NAME}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      required
+                    />
+                    {section.ingredients.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeIngredient(sectionIndex, ingredientIndex)}
+                        className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
 
@@ -640,19 +708,29 @@ const handleSubmit = async (e) => {
           {instructionSections.map((section, sectionIndex) => (
             <div key={sectionIndex} className="mb-6 p-4 border border-gray-200 rounded-lg">
               <div className="flex justify-between items-center mb-3">
-                <input
-                  type="text"
-                  value={section.section_title}
-                  onChange={(e) => updateInstructionSectionTitle(sectionIndex, e.target.value)}
-                  placeholder="Section title (e.g., 'Prepare the Dough')"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  required
-                />
+                <div className="flex-1 mr-2">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm text-gray-600">Section Title</span>
+                    <CharacterCounter 
+                      current={section.section_title.length} 
+                      max={CHAR_LIMITS.SECTION_TITLE} 
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={section.section_title}
+                    onChange={(e) => updateInstructionSectionTitle(sectionIndex, e.target.value)}
+                    placeholder="Section title (e.g., 'Prepare the Dough')"
+                    maxLength={CHAR_LIMITS.SECTION_TITLE}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    required
+                  />
+                </div>
                 {instructionSections.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeInstructionSection(sectionIndex)}
-                    className="ml-2 bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition"
+                    className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition self-end"
                   >
                     Remove Section
                   </button>
@@ -660,27 +738,37 @@ const handleSubmit = async (e) => {
               </div>
 
               {section.instructions.map((instruction, instructionIndex) => (
-                <div key={instructionIndex} className="flex gap-2 mb-2">
-                  <span className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold mt-1">
-                    {instruction.step_order}
-                  </span>
-                  <textarea
-                    value={instruction.instruction_step}
-                    onChange={(e) => updateInstruction(sectionIndex, instructionIndex, e.target.value)}
-                    placeholder="Instruction step *"
-                    rows="2"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    required
-                  />
-                  {section.instructions.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeInstruction(sectionIndex, instructionIndex)}
-                      className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition h-10"
-                    >
-                      ×
-                    </button>
-                  )}
+                <div key={instructionIndex} className="mb-2">
+                  <div className="flex justify-end mb-1">
+                    <CharacterCounter 
+                      current={instruction.instruction_step.length} 
+                      max={CHAR_LIMITS.INSTRUCTION_STEP} 
+                      className="text-xs"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <span className="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold mt-1">
+                      {instruction.step_order}
+                    </span>
+                    <textarea
+                      value={instruction.instruction_step}
+                      onChange={(e) => updateInstruction(sectionIndex, instructionIndex, e.target.value)}
+                      placeholder="Instruction step *"
+                      maxLength={CHAR_LIMITS.INSTRUCTION_STEP}
+                      rows="2"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      required
+                    />
+                    {section.instructions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeInstruction(sectionIndex, instructionIndex)}
+                        className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 transition h-10"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
 

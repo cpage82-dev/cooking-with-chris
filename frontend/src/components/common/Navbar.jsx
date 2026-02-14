@@ -57,7 +57,7 @@ const Navbar = () => {
                       to="/profile"
                       className="underline underline-offset-4 decoration-2 hover:text-gray-900 transition"
                     >
-                      {user?.first_name} {user?.last_name}
+                      {user?.first_name}
                     </Link>
                     <span>!</span>
                   </span>
