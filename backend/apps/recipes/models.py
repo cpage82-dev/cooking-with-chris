@@ -23,14 +23,16 @@ COURSE_TYPE_CHOICES = [
     ('Snacks', 'Snacks'),
     ('Appetizer', 'Appetizer'),
     ('Dinner', 'Dinner'),
+    ('Breads', 'Breads'),
     ('Dessert', 'Dessert'),
 ]
 
 RECIPE_TYPE_CHOICES = [
-    ('Entrée', 'Entrée'),
+    ('Entrée (Main)', 'Entrée (Main)'),
     ('Soup', 'Soup'),
     ('Salad', 'Salad'),
     ('Pizza', 'Pizza'),
+    ('Pasta', 'Pasta'),
     ('Starter', 'Starter'),
     ('Side Dish', 'Side Dish'),
     ('Sauce', 'Sauce'),
@@ -42,7 +44,8 @@ PRIMARY_PROTEIN_CHOICES = [
     ('Fish', 'Fish'),
     ('Pork', 'Pork'),
     ('Turkey', 'Turkey'),
-    ('Vegetarian / None', 'Vegetarian / None'),
+    ('Vegetarian', 'Vegetarian'),
+    ('None', 'None'),
 ]
 
 ETHNIC_STYLE_CHOICES = [
