@@ -37,7 +37,7 @@ const Navbar = () => {
             />
             <span className="font-bold text-blue-600 text-lg sm:text-2xl">
               <span className="hidden sm:inline">Cooking with Chris</span>
-              <span className="sm:hidden">CwC</span>
+              <span className="sm:hidden">Cooking with Chris</span>
             </span>
           </Link>
 
