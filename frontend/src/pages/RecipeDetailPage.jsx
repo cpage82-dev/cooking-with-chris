@@ -140,7 +140,8 @@ const RecipeDetailPage = () => {
               {recipe.recipe_name}
             </h1>
             <p className="text-gray-600">
-              Created By {recipe.creator_name} | Created {formatDate(recipe.created_at)}
+              Created By: {recipe.creator_name} | Created: {formatDate(recipe.created_at)} 
+              | Last Updated: {formatDate(recipe.updated_at)}
             </p>
           </div>
 
