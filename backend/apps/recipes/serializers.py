@@ -5,6 +5,7 @@ This module provides serializers for:
 - Recipe list view (lightweight)
 - Recipe detail view (complete with ingredients and instructions)
 - Recipe create/update operations
+- Comments on recipes
 """
 import json
 
@@ -15,6 +16,7 @@ from .models import (
     Ingredient,
     InstructionSection,
     Instruction,
+    Comment,  # ← ADD THIS IMPORT
 )
 from apps.users.serializers import UserListSerializer
 
@@ -115,6 +117,50 @@ class InstructionSectionSerializer(serializers.ModelSerializer):
         return value.strip()
 
 
+class CommentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Recipe Comments.
+    """
+    user_name = serializers.SerializerMethodField()
+    user_id = serializers.SerializerMethodField()
+    can_delete = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Comment
+        fields = [
+            'id',
+            'recipe',
+            'user',
+            'user_id',
+            'user_name',
+            'comment_text',
+            'created_at',
+            'can_delete',
+        ]
+        read_only_fields = ['id', 'user', 'created_at', 'user_name', 'user_id', 'can_delete']
+    
+    def get_user_name(self, obj):
+        """Return user's full name or 'Anonymous' if deleted."""
+        return obj.get_user_display()
+    
+    def get_user_id(self, obj):
+        """Return user ID or None if deleted."""
+        return obj.user.id if obj.user else None
+    
+    def get_can_delete(self, obj):
+        """Check if current user can delete this comment (admin only)."""
+        request = self.context.get('request')
+        if not request or not request.user:
+            return False
+        return request.user.is_staff or request.user.is_superuser
+    
+    def create(self, validated_data):
+        """Automatically set user from request."""
+        request = self.context.get('request')
+        validated_data['user'] = request.user
+        return super().create(validated_data)
+
+
 class RecipeListSerializer(serializers.ModelSerializer):
     """
     Lightweight serializer for recipe list view.
@@ -169,7 +215,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
             except (AttributeError, ValueError):
                 pass
     
-    # Default image
+        # Default image
         return "https://as1.ftcdn.net/v2/jpg/00/81/88/98/1000_F_81889870_D1KroNymRQ1EfNZu8GDR0ZOxQSgocxUf.jpg"
 
 
@@ -187,6 +233,8 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
     total_time = serializers.SerializerMethodField()
     ingredient_sections = IngredientSectionSerializer(many=True, read_only=True)
     instruction_sections = InstructionSectionSerializer(many=True, read_only=True)
+    comments = CommentSerializer(many=True, read_only=True)  # ← ADD THIS
+    comment_count = serializers.SerializerMethodField()  # ← ADD THIS
     
     class Meta:
         model = Recipe
@@ -210,6 +258,8 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
             'creator_id',
             'ingredient_sections',
             'instruction_sections',
+            'comments',  # ← ADD THIS
+            'comment_count',  # ← ADD THIS
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'total_time']
     
@@ -248,6 +298,10 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
     def get_total_time(self, obj):
         """Return calculated total time (prep_time + cook_time)."""
         return obj.total_time
+    
+    def get_comment_count(self, obj):
+        """Return total number of comments."""
+        return obj.comments.count()
 
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
@@ -257,8 +311,8 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     Handles nested creation/update of ingredient and instruction sections.
     """
     
-    ingredient_sections = IngredientSectionSerializer(many=True)  # Back to nested
-    instruction_sections = InstructionSectionSerializer(many=True)  # Back to nested
+    ingredient_sections = IngredientSectionSerializer(many=True)
+    instruction_sections = InstructionSectionSerializer(many=True)
     
     class Meta:
         model = Recipe

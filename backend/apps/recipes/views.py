@@ -7,20 +7,21 @@ Provides:
 - Retrieve recipe details
 - Update recipes (owner or admin only)
 - Delete recipes (owner or admin only, soft delete)
+- Comments on recipes
 """
 import json
-from urllib import request
 
-from rest_framework import generics, permissions, status, filters
+from rest_framework import generics, permissions, status, filters, viewsets
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.db.models import Q, Case, When, Value, IntegerField
-from uritemplate import partial
-from .models import Recipe
+
+from .models import Recipe, Comment
 from .serializers import (
     RecipeListSerializer,
     RecipeDetailSerializer,
     RecipeCreateUpdateSerializer,
+    CommentSerializer
 )
 
 
@@ -156,23 +157,11 @@ class RecipeListCreateView(generics.ListCreateAPIView):
         for key in request.data.keys():
             data[key] = request.data[key]
         
-        # DEBUG: Print what we received
-        print("=" * 80)
-        print("RECEIVED DATA KEYS:", data.keys())
-        for key, value in data.items():
-            if isinstance(value, (str, int)):
-                print(f"{key}: {type(value)} = {value}")
-            else:
-                print(f"{key}: {type(value)} = [FILE or COMPLEX DATA]")
-        print("=" * 80)
-        
         # Parse JSON strings for nested sections
         if 'ingredient_sections' in data and isinstance(data['ingredient_sections'], str):
             try:
                 data['ingredient_sections'] = json.loads(data['ingredient_sections'])
-                print("PARSED ingredient_sections successfully")
             except json.JSONDecodeError as e:
-                print(f"JSON DECODE ERROR (ingredients): {e}")
                 return Response(
                     {'ingredient_sections': f'Invalid JSON format: {str(e)}'},
                     status=status.HTTP_400_BAD_REQUEST
@@ -181,9 +170,7 @@ class RecipeListCreateView(generics.ListCreateAPIView):
         if 'instruction_sections' in data and isinstance(data['instruction_sections'], str):
             try:
                 data['instruction_sections'] = json.loads(data['instruction_sections'])
-                print("PARSED instruction_sections successfully")
             except json.JSONDecodeError as e:
-                print(f"JSON DECODE ERROR (instructions): {e}")
                 return Response(
                     {'instruction_sections': f'Invalid JSON format: {str(e)}'},
                     status=status.HTTP_400_BAD_REQUEST
@@ -191,15 +178,7 @@ class RecipeListCreateView(generics.ListCreateAPIView):
         
         # Create serializer with parsed data
         serializer = self.get_serializer(data=data)
-        
-        # Check validation
-        if not serializer.is_valid():
-            print("VALIDATION ERRORS:")
-            print(serializer.errors)
-            print("=" * 80)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Save with current user
+        serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         
         # Return created recipe
@@ -232,6 +211,7 @@ class RecipeDetailView(generics.RetrieveUpdateDestroyAPIView):
         return Recipe.objects.filter(deleted=False).select_related('user').prefetch_related(
             'ingredient_sections__ingredients',
             'instruction_sections__instructions',
+            'comments',  # ← ADD THIS for comment prefetching
         )
     
     def perform_destroy(self, instance):
@@ -289,3 +269,64 @@ class RecipeDetailView(generics.RetrieveUpdateDestroyAPIView):
         # Return updated recipe using detail serializer
         detail_serializer = RecipeDetailSerializer(serializer.instance)
         return Response(detail_serializer.data)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Recipe Comments.
+    
+    - List/Retrieve: Anyone can view
+    - Create: Authenticated users only
+    - Delete: Admin users only
+    - Update: Not allowed
+    """
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    
+    def get_permissions(self):
+        """Set permissions based on action."""
+        if self.action in ['list', 'retrieve']:
+            permission_classes = [AllowAny]
+        elif self.action == 'create':
+            permission_classes = [IsAuthenticated]
+        elif self.action == 'destroy':
+            permission_classes = [IsAdminUser]
+        else:
+            # Block update/partial_update
+            permission_classes = [IsAdminUser]
+        return [permission() for permission in permission_classes]
+    
+    def get_queryset(self):
+        """Filter comments by recipe if recipe_id is provided."""
+        queryset = Comment.objects.all()
+        recipe_id = self.request.query_params.get('recipe', None)
+        if recipe_id:
+            queryset = queryset.filter(recipe_id=recipe_id)
+        return queryset
+    
+    def create(self, request, *args, **kwargs):
+        """Create a new comment."""
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, 
+            status=status.HTTP_201_CREATED, 
+            headers=headers
+        )
+    
+    def update(self, request, *args, **kwargs):
+        """Disable update - comments cannot be edited."""
+        return Response(
+            {'detail': 'Comments cannot be edited. Please delete and create a new one.'},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+    
+    def partial_update(self, request, *args, **kwargs):
+        """Disable partial update - comments cannot be edited."""
+        return Response(
+            {'detail': 'Comments cannot be edited. Please delete and create a new one.'},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )

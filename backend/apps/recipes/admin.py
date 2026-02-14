@@ -9,6 +9,7 @@ from .models import (
     Ingredient,
     InstructionSection,
     Instruction,
+    Comment
 )
 
 
@@ -107,3 +108,22 @@ class InstructionSectionAdmin(nested_admin.NestedModelAdmin):
     ordering = ['recipe', 'section_order']
     
     inlines = [InstructionInline]
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    """Admin interface for Comments."""
+    list_display = ['id', 'get_user_display', 'recipe', 'comment_text_preview', 'created_at']
+    list_filter = ['created_at', 'recipe']
+    search_fields = ['comment_text', 'user__email', 'recipe__recipe_name']
+    readonly_fields = ['created_at']
+    
+    def comment_text_preview(self, obj):
+        """Show first 50 characters of comment."""
+        return obj.comment_text[:50] + '...' if len(obj.comment_text) > 50 else obj.comment_text
+    comment_text_preview.short_description = 'Comment'
+    
+    def get_user_display(self, obj):
+        """Display user name or Anonymous."""
+        return obj.get_user_display()
+    get_user_display.short_description = 'User'

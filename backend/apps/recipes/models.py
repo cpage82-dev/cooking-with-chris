@@ -430,3 +430,47 @@ class Instruction(models.Model):
     def __str__(self):
         """String representation of instruction."""
         return f"Step {self.step_order}: {self.instruction_step[:50]}..."
+
+class Comment(models.Model):
+    """
+    Comments on recipes.
+    """
+    recipe = models.ForeignKey(
+        Recipe, 
+        on_delete=models.CASCADE, 
+        related_name='comments',
+        help_text="Recipe this comment belongs to"
+    )
+    user = models.ForeignKey(
+        'users.User', 
+        on_delete=models.SET_NULL,  # Keep comment if user deleted
+        null=True,  # Allow null for deleted users
+        blank=True,
+        related_name='comments',
+        help_text="User who created this comment"
+    )
+    comment_text = models.TextField(
+        help_text="Comment content"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When comment was created"
+    )
+    
+    class Meta:
+        ordering = ['-created_at']  # Newest comments first
+        verbose_name = 'Comment'
+        verbose_name_plural = 'Comments'
+        indexes = [
+            models.Index(fields=['recipe', '-created_at']),
+        ]
+    
+    def __str__(self):
+        user_name = self.get_user_display()
+        return f"{user_name} on {self.recipe.recipe_name}"
+    
+    def get_user_display(self):
+        """Return user's name or 'Anonymous' if user is deleted."""
+        if self.user and not self.user.deleted:
+            return self.user.get_full_name()
+        return "Anonymous"
