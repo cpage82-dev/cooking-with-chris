@@ -38,6 +38,16 @@ const Navbar = () => {
               View All Recipes
             </Link>
 
+            {/* My Recipes link - only visible when logged in */}
+            {isAuthenticated && (
+              <Link
+                to="/my-recipes"
+                className="text-gray-700 hover:text-blue-600 transition"
+              >
+                View My Recipes
+              </Link>
+            )}
+
             {isAuthenticated ? (
               <>
                 <Link
@@ -49,7 +59,7 @@ const Navbar = () => {
                 </Link>
 
                 <div className="flex items-center space-x-4">
-                  {/* ✅ Welcome message with clickable, underlined name */}
+                  {/* Welcome message with clickable, underlined name */}
                   <span className="text-gray-600 flex items-center gap-1">
                     <span aria-hidden>👤</span>
                     <span>Welcome,</span>
