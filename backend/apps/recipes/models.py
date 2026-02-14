@@ -20,7 +20,7 @@ from cloudinary.models import CloudinaryField
 COURSE_TYPE_CHOICES = [
     ('Breakfast', 'Breakfast'),
     ('Lunch', 'Lunch'),
-    ('Hors d\'oeuvres', 'Hors d\'oeuvres'),
+    ('Snacks', 'Snacks'),
     ('Appetizer', 'Appetizer'),
     ('Dinner', 'Dinner'),
     ('Dessert', 'Dessert'),

@@ -469,9 +469,10 @@ const EditRecipePage = () => {
                   <option value="">Select course type</option>
                   <option value="Breakfast">Breakfast</option>
                   <option value="Lunch">Lunch</option>
-                  <option value="Hors d'oeuvres">Hors d'oeuvres</option>
+                  <option value="Snacks">Snacks</option>
                   <option value="Appetizer">Appetizer</option>
                   <option value="Dinner">Dinner</option>
+                  <option value="Breads">Breads</option>
                   <option value="Dessert">Dessert</option>
                 </select>
               </div>
@@ -489,10 +490,11 @@ const EditRecipePage = () => {
                   required
                 >
                   <option value="">Select recipe type</option>
-                  <option value="Entrée">Entrée</option>
+                  <option value="Entrée (Main)">Entrée (Main)</option>
                   <option value="Soup">Soup</option>
                   <option value="Salad">Salad</option>
                   <option value="Pizza">Pizza</option>
+                  <option value="Pasta">Pasta</option>
                   <option value="Starter">Starter</option>
                   <option value="Side Dish">Side Dish</option>
                   <option value="Sauce">Sauce</option>
@@ -517,7 +519,8 @@ const EditRecipePage = () => {
                   <option value="Fish">Fish</option>
                   <option value="Pork">Pork</option>
                   <option value="Turkey">Turkey</option>
-                  <option value="Vegetarian / None">Vegetarian / None</option>
+                  <option value="Vegetarian">Vegetarian</option>
+                  <option value="None">None</option>
                 </select>
               </div>
 
