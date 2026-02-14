@@ -81,6 +81,9 @@ const RecipeDetailPage = () => {
       month: '2-digit',
       day: '2-digit',
       year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
     });
   };
 
@@ -137,7 +140,7 @@ const RecipeDetailPage = () => {
               {recipe.recipe_name}
             </h1>
             <p className="text-gray-600">
-              By {recipe.creator_name} | Created {formatDate(recipe.created_at)}
+              Created By {recipe.creator_name} | Created {formatDate(recipe.created_at)}
             </p>
           </div>
 
@@ -242,7 +245,9 @@ const RecipeDetailPage = () => {
       {/* Description */}
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
         <h2 className="text-2xl font-bold mb-3">Description</h2>
-        <p className="text-gray-700 leading-relaxed">{recipe.recipe_description}</p>
+          <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+            {recipe.recipe_description}
+          </p>
       </div>
 
       {/* Ingredients */}
