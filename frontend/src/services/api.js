@@ -7,8 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000, // ✅ 15s timeout so UI won't hang forever
-  // Don't set Content-Type here - let axios handle it based on data type
+  timeout: 15000,
 });
 
 // Request interceptor - add auth token to requests
@@ -23,7 +22,6 @@ api.interceptors.request.use(
     if (!(config.data instanceof FormData)) {
       config.headers['Content-Type'] = 'application/json';
     }
-    // If it IS FormData, let axios set the Content-Type with boundary automatically
     
     return config;
   },
@@ -32,7 +30,7 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - handle token refresh
+// Response interceptor - handle token refresh and errors
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -43,10 +41,11 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       const refreshToken = localStorage.getItem('refresh_token');
+      
       if (refreshToken) {
         try {
           const response = await axios.post(
-            `${API_BASE_URL}/auth/token/refresh/`,
+            `${API_BASE_URL}/auth/refresh/`,
             { refresh: refreshToken },
             { timeout: 15000 }
           );
@@ -59,12 +58,23 @@ api.interceptors.response.use(
           return api(originalRequest);
         } catch (refreshError) {
           // Refresh failed - logout user
+          console.log('Token refresh failed - logging out');
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           localStorage.removeItem('user');
-          window.location.href = '/login';
+          
+          // Redirect to login with reason
+          window.location.href = '/login?reason=session_expired';
           return Promise.reject(refreshError);
         }
+      } else {
+        // No refresh token - redirect to login
+        console.log('No refresh token - logging out');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        window.location.href = '/login?reason=no_session';
+        return Promise.reject(error);
       }
     }
 

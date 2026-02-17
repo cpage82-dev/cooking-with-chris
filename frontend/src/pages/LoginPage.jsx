@@ -11,6 +11,25 @@ const LoginPage = () => {
   const location = useLocation();
   const { login } = useAuth();
   const successMessage = location.state?.message;
+
+    // Check for logout reasons in URL
+  const searchParams = new URLSearchParams(location.search);
+  const logoutReason = searchParams.get('reason');
+  
+  const getLogoutMessage = () => {
+    switch (logoutReason) {
+      case 'inactivity':
+        return 'You were logged out due to inactivity. Please log in again.';
+      case 'session_expired':
+        return 'Your session has expired. Please log in again.';
+      case 'no_session':
+        return 'Please log in to continue.';
+      default:
+        return null;
+    }
+  };
+  
+  const logoutMessage = getLogoutMessage();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -55,6 +74,20 @@ const LoginPage = () => {
         {successMessage && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
             {successMessage}
+          </div>
+        )}
+
+                {/* Logout reason message */}
+        {logoutMessage && (
+          <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded mb-4">
+            {logoutMessage}
+          </div>
+        )}
+
+        {/* Error from login attempt */}
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
           </div>
         )}
 
